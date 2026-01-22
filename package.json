@@ -1,0 +1,29 @@
+{
+  "name": "gymmate",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Fitness social platform for finding gym partners",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@google/generative-ai": "^0.24.1",
+    "@supabase/supabase-js": "^2.39.0",
+    "framer-motion": "^10.16.16",
+    "lucide-react": "^0.294.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "react-router-dom": "^6.21.1"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.5",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.1",
+    "autoprefixer": "^10.4.23",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.19",
+    "vite": "^7.2.4"
+  }
+}

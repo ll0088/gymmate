@@ -1,0 +1,51 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary-teal: #2C5F5D;
+  --primary-teal-dark: #1E4241;
+  --bg-cream: #FAF7F2;
+  --text-dark: #1A1C1E;
+  --text-muted: #6C727A;
+  --white: #FFFFFF;
+  /* This was in the original, but not in the provided :root block. Keeping it for completeness as it's a common variable. */
+  --tag-bg: #EFEDE8;
+  --red-accent: #E53935;
+  --gold: #FFB300;
+  --glass: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.3);
+}
+
+@layer base {
+  body {
+    @apply bg-[var(--bg-cream)] text-[var(--text-dark)] font-sans antialiased;
+    overflow-x: hidden;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-[var(--primary-teal)] text-white font-black py-4 px-8 rounded-3xl transition-all active:scale-95 shadow-lg shadow-teal-900/10 hover:bg-[var(--primary-teal-dark)] disabled:opacity-50;
+  }
+
+  .btn-secondary {
+    @apply bg-white text-[var(--primary-teal)] font-bold py-4 px-8 rounded-3xl border-2 border-[var(--primary-teal)] transition-all active:scale-95;
+  }
+
+  .input-field {
+    @apply w-full bg-[var(--tag-bg)] border-none rounded-2xl p-4 text-sm font-semibold focus:ring-2 focus:ring-[var(--primary-teal)] transition-all;
+  }
+
+  .card {
+    @apply bg-white rounded-[40px] p-6 shadow-sm border border-gray-100/50 transition-all duration-300;
+  }
+
+  .glass-card {
+    @apply bg-white/70 backdrop-blur-xl rounded-[40px] p-6 border border-white/20 shadow-lg;
+  }
+
+  .profile-card {
+    @apply bg-white rounded-3xl shadow-xl overflow-hidden;
+  }
+}
