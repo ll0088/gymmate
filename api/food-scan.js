@@ -6,9 +6,9 @@ export default async function handler(req, res) {
   }
 
   try {
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
     if (!apiKey) {
-      return res.status(500).json({ error: "Missing GEMINI_API_KEY" });
+      return res.status(500).json({ error: "Missing API Key" });
     }
 
     const { base64Image } = req.body || {};
@@ -17,20 +17,27 @@ export default async function handler(req, res) {
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-pro-vision" });
+
+    // 1. Use the Modern Model
+    // 'gemini-2.5-flash' is the 2026 standard for fast, cheap vision tasks.
+    // (If you are on an older API version, use 'gemini-1.5-flash')
+    const model = genAI.getGenerativeModel({
+      model: "gemini-2.5-flash", 
+      // 2. Enable JSON Mode (Crucial for reliability)
+      generationConfig: { responseMimeType: "application/json" }
+    });
 
     const prompt = `
-Identify the food items in this image and estimate nutritional values.
-Return ONLY valid JSON:
-{
-  "food_name": "Concise dish name",
-  "calories": number,
-  "protein": number,
-  "carbs": number,
-  "fats": number
-}
-`;
+    Identify the food items in this image and estimate nutritional values.
+    Return a single JSON object with these keys:
+    - food_name (string)
+    - calories (number)
+    - protein (number)
+    - carbs (number)
+    - fats (number)
+    `;
 
+    // 3. Clean Base64 Data
     const data = String(base64Image).includes(",")
       ? String(base64Image).split(",")[1]
       : String(base64Image);
@@ -41,19 +48,15 @@ Return ONLY valid JSON:
     ]);
 
     const response = await result.response;
-    const text = response.text().trim();
+    const text = response.text();
 
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      return res.status(500).json({ error: "Invalid response format", raw: text });
-    }
-
-    const parsed = JSON.parse(jsonMatch[0]);
+    // 4. Safe Parsing (No Regex needed due to JSON Mode)
+    const parsed = JSON.parse(text);
+    
     return res.status(200).json({ data: parsed });
+
   } catch (e) {
-    console.error("food-scan error:", e);
-    return res.status(500).json({ error: "Food scan failed" });
+    console.error("Food Scan Error:", e.message);
+    return res.status(500).json({ error: "Food scan failed", details: e.message });
   }
 }
-
-
