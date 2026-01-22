@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion'
-import { Heart, X, MapPin, Info, ArrowLeft, MoreVertical, MessageCircle } from 'lucide-react'
+import { Heart, X, MapPin, Info, ArrowLeft, MoreVertical } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { supabase, createSwipe, getCurrentUser } from '../lib/supabase'
 
@@ -31,34 +31,77 @@ export default function Swipe() {
                 .neq('id', user.id)
                 .limit(20)
 
-            // Fallback demo profiles if database is empty so new users can test swipe
+            // Fallback demo profiles if database is empty so new users can test swipe.
+            // Includes men/women + trainer profiles with photos.
             if (data && data.length > 0) {
                 setProfiles(data)
             } else {
                 setProfiles([
+                    // Users
                     {
                         id: 'demo-1',
+                        role: 'user',
                         full_name: 'Alex Rivera',
                         age: 26,
                         fitness_goal: 'Strength',
                         experience_level: 'Advanced',
                         gym_name: 'PureGym London Central',
+                        avatar_url: 'https://i.pravatar.cc/800?img=12',
                     },
                     {
                         id: 'demo-2',
+                        role: 'user',
                         full_name: 'Sarah Chen',
                         age: 24,
                         fitness_goal: 'Bodyweight',
                         experience_level: 'Intermediate',
                         gym_name: 'Gymbox Farringdon',
+                        avatar_url: 'https://i.pravatar.cc/800?img=47',
                     },
                     {
                         id: 'demo-3',
+                        role: 'user',
                         full_name: 'James Wilson',
                         age: 28,
                         fitness_goal: 'Endurance',
                         experience_level: 'Beginner',
                         gym_name: 'JD Gyms',
+                        avatar_url: 'https://i.pravatar.cc/800?img=56',
+                    },
+                    {
+                        id: 'demo-4',
+                        role: 'user',
+                        full_name: 'Maya Patel',
+                        age: 27,
+                        fitness_goal: 'Hypertrophy',
+                        experience_level: 'Intermediate',
+                        gym_name: 'Virgin Active',
+                        avatar_url: 'https://i.pravatar.cc/800?img=32',
+                    },
+                    // Trainers
+                    {
+                        id: 'demo-t1',
+                        role: 'trainer',
+                        full_name: 'Marcus Thorne',
+                        age: 32,
+                        fitness_goal: 'Coaching',
+                        experience_level: 'Expert',
+                        gym_name: 'Third Space Soho',
+                        specialties: 'Hypertrophy • Fat Loss',
+                        price_per_hour: 55,
+                        avatar_url: 'https://i.pravatar.cc/800?img=15',
+                    },
+                    {
+                        id: 'demo-t2',
+                        role: 'trainer',
+                        full_name: 'Elena Kostic',
+                        age: 29,
+                        fitness_goal: 'Coaching',
+                        experience_level: 'Expert',
+                        gym_name: 'PureGym',
+                        specialties: 'Mobility • Rehab • Yoga',
+                        price_per_hour: 45,
+                        avatar_url: 'https://i.pravatar.cc/800?img=44',
                     },
                 ])
             }
@@ -73,12 +116,19 @@ export default function Swipe() {
         const swipeType = direction === 'right' ? 'like' : 'dislike'
 
         if (activeProfile) {
-            const user = await getCurrentUser()
-            await createSwipe(user.id, activeProfile.id, swipeType)
+            // Avoid writing demo swipes to the database
+            if (!String(activeProfile.id).startsWith('demo-')) {
+                const user = await getCurrentUser()
+                await createSwipe(user.id, activeProfile.id, swipeType)
+            }
         }
 
         x.set(0)
-        setCurrentIndex(prev => prev + 1)
+        // Loop so swipe never ends with a blank screen
+        setCurrentIndex(prev => {
+            if (!profiles.length) return prev
+            return (prev + 1) % profiles.length
+        })
     }
 
     if (loading) return (
@@ -105,7 +155,7 @@ export default function Swipe() {
 
             <div className="flex-1 relative px-6 flex items-center justify-center">
                 <AnimatePresence>
-                    {profiles.length > currentIndex ? (
+                    {profiles.length > 0 ? (
                         <motion.div
                             key={activeProfile.id}
                             style={{ x, rotate, opacity }}
@@ -119,7 +169,17 @@ export default function Swipe() {
                         >
                             <div className="w-full h-full rounded-[48px] overflow-hidden relative shadow-2xl border-4 border-white">
                                 {/* Simulated Photo */}
-                                <div className="absolute inset-0 premium-gradient" />
+                                {activeProfile?.avatar_url ? (
+                                    <img
+                                        src={activeProfile.avatar_url}
+                                        alt={activeProfile.full_name}
+                                        className="absolute inset-0 w-full h-full object-cover"
+                                        loading="eager"
+                                    />
+                                ) : (
+                                    <div className="absolute inset-0 premium-gradient" />
+                                )}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/10 to-transparent" />
 
                                 {/* UI Overlay Icons */}
                                 <motion.div style={{ opacity: heartOpacity }} className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none">
@@ -137,6 +197,11 @@ export default function Swipe() {
                                 <div className="absolute inset-x-0 bottom-0 p-8 bg-gradient-to-t from-black/80 via-black/40 to-transparent text-white">
                                     <div className="flex items-end justify-between mb-4">
                                         <div>
+                                            {activeProfile?.role === 'trainer' && (
+                                                <span className="inline-block mb-2 px-3 py-1 bg-white/15 backdrop-blur-md rounded-full text-[10px] font-black uppercase tracking-widest border border-white/20">
+                                                    Trainer
+                                                </span>
+                                            )}
                                             <div className="flex items-center gap-2 mb-1">
                                                 <h2 className="text-4xl font-black tracking-tighter uppercase">{activeProfile.full_name}, {activeProfile.age || '24'}</h2>
                                                 <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse shadow-lg shadow-green-400/50" />
@@ -145,6 +210,12 @@ export default function Swipe() {
                                                 <MapPin className="w-4 h-4" /> {activeProfile.gym_name || 'PureGym London'}
                                             </p>
                                         </div>
+                                        {activeProfile?.role === 'trainer' && activeProfile?.price_per_hour && (
+                                            <div className="text-right">
+                                                <div className="text-2xl font-black">£{activeProfile.price_per_hour}</div>
+                                                <div className="text-[10px] font-black uppercase tracking-widest opacity-70">per hour</div>
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div className="flex gap-2 mb-4">
@@ -154,6 +225,11 @@ export default function Swipe() {
                                         <span className="px-4 py-2 bg-white/10 backdrop-blur-md rounded-full text-[10px] font-black uppercase tracking-widest border border-white/20">
                                             {activeProfile.experience_level || 'ADVANCED'}
                                         </span>
+                                        {activeProfile?.role === 'trainer' && activeProfile?.specialties && (
+                                            <span className="px-4 py-2 bg-white/10 backdrop-blur-md rounded-full text-[10px] font-black uppercase tracking-widest border border-white/20">
+                                                {activeProfile.specialties}
+                                            </span>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -172,7 +248,7 @@ export default function Swipe() {
             </div>
 
             {/* Action Buttons */}
-            {profiles.length > currentIndex && (
+            {profiles.length > 0 && (
                 <div className="px-6 py-12 flex items-center justify-center gap-6">
                     <motion.button
                         whileTap={{ scale: 0.9 }}

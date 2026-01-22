@@ -18,7 +18,7 @@ import './index.css'
 
 function AppShell({ user }) {
   const location = useLocation()
-  const onPulsePage = location.pathname === '/pulse'
+  const onHomePage = location.pathname === '/dashboard'
 
   return (
     <div className="min-h-screen bg-[var(--bg-cream)]">
@@ -36,7 +36,7 @@ function AppShell({ user }) {
         <Route path="/profile" element={user ? <Profile /> : <Navigate to="/" />} />
       </Routes>
 
-      {user && !onPulsePage && (
+      {user && onHomePage && (
         <>
           <PulseFAB />
           <BottomNav />
