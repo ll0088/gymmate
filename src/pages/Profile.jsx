@@ -167,6 +167,21 @@ export default function Profile() {
                                 <span className="font-bold text-sm text-red-600">Sign Out</span>
                             </div>
                         </button>
+
+                        {/* Developer Tools */}
+                        <div className="pt-8 opacity-40">
+                            <p className="text-[8px] font-black uppercase tracking-[0.3em] text-center mb-4">DEVELOPER TOOLS</p>
+                            <button
+                                onClick={async () => {
+                                    const { seedDatabase } = await import('../seed')
+                                    await seedDatabase()
+                                    alert('Marketplace Seeded! Refresh to see new profiles.')
+                                }}
+                                className="w-full border-2 border-dashed border-gray-300 p-4 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:border-[var(--primary-teal)] hover:text-[var(--primary-teal)] transition-all"
+                            >
+                                Seed Mock Profiles
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>

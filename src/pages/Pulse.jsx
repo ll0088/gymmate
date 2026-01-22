@@ -1,13 +1,14 @@
 import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Sparkles, Send, Image as ImageIcon, X, Camera } from 'lucide-react'
+import { Sparkles, Send, Image as ImageIcon, X, ChevronLeft, Zap, Target, Trophy } from 'lucide-react'
 import { getGeminiStream, analyzeImage } from '../lib/gemini'
+import { motion, AnimatePresence } from 'framer-motion'
 
 export default function Pulse() {
     const [messages, setMessages] = useState([
         {
             role: 'assistant',
-            content: "Hey! I'm Pulse, your AI fitness assistant. I can help you with workout plans, nutrition advice, and motivation. What can I help you with today?"
+            content: "Hey there! I'm Pulse, your elite performance coach. Whether you're looking to shatter personal records, optimize your macros, or perfect your form—I've got the data and the drive to get you there. What's our objective today?"
         }
     ])
     const [input, setInput] = useState('')
@@ -62,17 +63,17 @@ export default function Pulse() {
         removeImage()
         setLoading(true)
 
-        // Create a placeholder for the assistant's response
-        const assistantMessage = { role: 'assistant', content: '' }
-        setMessages(prev => [...prev, assistantMessage])
+        const assistantMessageIdx = messages.length + 1
+        setMessages(prev => [...prev, { role: 'assistant', content: '', thinking: true }])
 
         try {
             if (currentImage) {
-                const prompt = userContent || "Analyze this image and tell me what you see related to fitness or nutrition."
+                const prompt = userContent || "Analyze this image for fitness, nutrition, or equipment insights. Be precise."
                 const result = await analyzeImage(currentImage, prompt)
                 setMessages(prev => {
                     const newMessages = [...prev]
                     newMessages[newMessages.length - 1].content = result
+                    newMessages[newMessages.length - 1].thinking = false
                     return newMessages
                 })
             } else {
@@ -82,6 +83,7 @@ export default function Pulse() {
                     setMessages(prev => {
                         const newMessages = [...prev]
                         newMessages[newMessages.length - 1].content = fullResponse
+                        newMessages[newMessages.length - 1].thinking = false
                         return newMessages
                     })
                 })
@@ -90,7 +92,8 @@ export default function Pulse() {
             console.error("Pulse Error:", error)
             setMessages(prev => {
                 const newMessages = [...prev]
-                newMessages[newMessages.length - 1].content = "Sorry, I encountered an error. Please check your API key and try again."
+                newMessages[newMessages.length - 1].content = "Elite connectivity lost. Please recalibrate (check API/Network) and try again."
+                newMessages[newMessages.length - 1].thinking = false
                 return newMessages
             })
         } finally {
@@ -99,83 +102,93 @@ export default function Pulse() {
     }
 
     return (
-        <div className="h-screen flex flex-col bg-[var(--bg-cream)]">
-            {/* Header */}
-            <div className="bg-gradient-to-r from-[var(--primary-teal)] to-[var(--primary-teal-dark)] text-white p-4 shadow-lg z-10">
-                <div className="max-w-2xl mx-auto flex items-center gap-3">
-                    <button onClick={() => navigate('/dashboard')} className="text-white/80 hover:text-white transition-colors">
-                        ← Back
-                    </button>
-                    <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/20">
-                        <Sparkles className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                        <h2 className="font-bold text-lg">Pulse AI</h2>
-                        <div className="flex items-center gap-1.5">
-                            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                            <p className="text-xs text-white/80">Online fitness coach</p>
+        <div className="fixed inset-0 bg-[var(--bg-cream)] flex flex-col z-50 animate-in fade-in slide-in-from-bottom-5 duration-500">
+            {/* Immersive Header */}
+            <header className="premium-gradient p-6 pt-12 pb-8 shadow-2xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-4 opacity-10">
+                    <Sparkles className="w-32 h-32 text-white" />
+                </div>
+
+                <div className="max-w-3xl mx-auto flex items-center justify-between relative z-10">
+                    <div className="flex items-center gap-4">
+                        <button
+                            onClick={() => navigate('/dashboard')}
+                            className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-white border border-white/30 active:scale-90 transition-all"
+                        >
+                            <ChevronLeft className="w-6 h-6" />
+                        </button>
+                        <div className="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-inner relative">
+                            <Zap className="w-8 h-8 text-[var(--primary-teal)] fill-current" />
+                            <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 border-2 border-white rounded-full" />
+                        </div>
+                        <div>
+                            <h2 className="text-xl font-black text-white uppercase tracking-tighter leading-none">Pulse AI</h2>
+                            <p className="text-[10px] font-black text-white/60 uppercase tracking-widest mt-1">ELITE PERFORMANCE COACH</p>
                         </div>
                     </div>
                 </div>
+            </header>
+
+            {/* Quick Actions Bar */}
+            <div className="px-6 py-4 flex gap-3 overflow-x-auto no-scrollbar bg-white/50 border-b border-gray-100">
+                {[
+                    { label: 'Workout Plan', icon: Target },
+                    { label: 'Nutrition Prep', icon: Zap },
+                    { label: 'Form Analysis', icon: Trophy }
+                ].map((action, i) => (
+                    <button key={i} className="flex-shrink-0 px-4 py-2.5 bg-white rounded-2xl border border-gray-100 flex items-center gap-2 shadow-sm active:scale-95 transition-all">
+                        <action.icon className="w-4 h-4 text-[var(--primary-teal)]" />
+                        <span className="text-[10px] font-black uppercase tracking-wider text-[var(--primary-teal)]">{action.label}</span>
+                    </button>
+                ))}
             </div>
 
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-6 scrollbar-hide">
-                <div className="max-w-2xl mx-auto space-y-4">
+            {/* Immersive Chat Area */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-8 no-scrollbar bg-[var(--bg-cream)] pb-32">
+                <AnimatePresence mode="popLayout">
                     {messages.map((message, index) => (
-                        <div
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
                             key={index}
                             className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
                         >
-                            <div
-                                className={`max-w-[85%] px-4 py-3 rounded-2xl shadow-sm ${message.role === 'user'
-                                    ? 'bg-[var(--primary-teal)] text-white rounded-br-sm'
-                                    : 'bg-white text-[var(--text-dark)] rounded-bl-sm border border-teal-50'
-                                    }`}
-                            >
-                                {message.role === 'assistant' && (
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <Sparkles className="w-4 h-4 text-[var(--primary-teal)]" />
-                                        <span className="text-xs font-bold text-[var(--primary-teal)] uppercase tracking-wider">
-                                            Pulse
-                                        </span>
+                            <div className={`max-w-[85%] relative ${message.role === 'user' ? 'order-2' : ''}`}>
+                                <div className={`px-6 py-4 rounded-[32px] shadow-xl ${message.role === 'user'
+                                        ? 'bg-[var(--primary-teal)] text-white rounded-tr-sm shadow-teal-900/10'
+                                        : 'bg-white text-[var(--text-dark)] rounded-tl-sm border border-white'
+                                    }`}>
+                                    {message.image && (
+                                        <div className="mb-4 rounded-2xl overflow-hidden shadow-lg border-2 border-white/20">
+                                            <img src={message.image} alt="Input" className="w-full h-auto" />
+                                        </div>
+                                    )}
+                                    <div className="leading-relaxed whitespace-pre-wrap text-[15px] font-semibold">
+                                        {message.thinking ? (
+                                            <div className="flex gap-1 py-1">
+                                                <div className="w-2 h-2 bg-[var(--primary-teal)] rounded-full animate-bounce" />
+                                                <div className="w-2 h-2 bg-[var(--primary-teal)] rounded-full animate-bounce [animation-delay:0.2s]" />
+                                                <div className="w-2 h-2 bg-[var(--primary-teal)] rounded-full animate-bounce [animation-delay:0.4s]" />
+                                            </div>
+                                        ) : message.content}
                                     </div>
-                                )}
-                                {message.image && (
-                                    <img
-                                        src={message.image}
-                                        alt="Uploaded"
-                                        className="w-full max-w-[200px] h-auto rounded-lg mb-2 border border-white/20 shadow-sm"
-                                    />
-                                )}
-                                <p className="leading-relaxed whitespace-pre-wrap text-[15px]">
-                                    {message.content || (loading && index === messages.length - 1 ? "..." : "")}
-                                </p>
+                                    <div className={`text-[8px] mt-2 font-black uppercase tracking-widest opacity-40 ${message.role === 'user' ? 'text-right' : 'text-left'}`}>
+                                        {message.role === 'user' ? 'Confirmed' : 'Pulse Proprietary Intelligence'}
+                                    </div>
+                                </div>
                             </div>
-                        </div>
+                        </motion.div>
                     ))}
-                    <div ref={messagesEndRef} />
-                </div>
+                </AnimatePresence>
+                <div ref={messagesEndRef} />
             </div>
 
-            {/* Input Overlay for Image Preview */}
-            {imagePreview && (
-                <div className="max-w-2xl mx-auto w-full px-4 mb-2">
-                    <div className="relative inline-block">
-                        <img src={imagePreview} alt="Preview" className="w-20 h-20 object-cover rounded-xl border-2 border-[var(--primary-teal)] shadow-md" />
-                        <button
-                            onClick={removeImage}
-                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-lg hover:bg-red-600"
-                        >
-                            <X className="w-4 h-4" />
-                        </button>
-                    </div>
-                </div>
-            )}
-
-            {/* Input */}
-            <div className="bg-white border-t border-gray-100 p-4 pb-8 md:pb-4 shadow-[0_-4px_20px_rgba(0,0,0,0.03)]">
-                <form onSubmit={handleSend} className="max-w-2xl mx-auto flex items-center gap-2">
+            {/* Fixed Input Bar */}
+            <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-[var(--bg-cream)] via-[var(--bg-cream)] to-transparent pb-10">
+                <form
+                    onSubmit={handleSend}
+                    className="max-w-3xl mx-auto bg-white rounded-[32px] p-2 flex items-center shadow-2xl shadow-teal-900/10 border border-white"
+                >
                     <input
                         type="file"
                         ref={fileInputRef}
@@ -183,38 +196,54 @@ export default function Pulse() {
                         accept="image/*"
                         className="hidden"
                     />
-                    <button
+                    <motion.button
+                        whileTap={{ scale: 0.9 }}
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
-                        className="p-3 text-[var(--text-muted)] hover:text-[var(--primary-teal)] hover:bg-teal-50 rounded-full transition-all"
+                        className="w-12 h-12 rounded-2xl flex items-center justify-center text-[var(--text-muted)] hover:text-[var(--primary-teal)] transition-colors"
                     >
                         <ImageIcon className="w-6 h-6" />
-                    </button>
+                    </motion.button>
 
-                    <div className="flex-1 relative">
-                        <input
-                            type="text"
-                            value={input}
-                            onChange={(e) => setInput(e.target.value)}
-                            placeholder="Ask Pulse anything..."
-                            className="w-full bg-gray-50 border-none rounded-2xl px-4 py-3 pr-12 focus:ring-2 focus:ring-[var(--primary-teal)]/20 text-[15px] transition-all"
-                            disabled={loading}
-                        />
-                        <button
-                            type="submit"
-                            disabled={(!input.trim() && !selectedImage) || loading}
-                            className={`absolute right-2 top-1.5 p-2 rounded-xl transition-all ${(!input.trim() && !selectedImage) || loading
-                                ? 'text-gray-300'
-                                : 'text-[var(--primary-teal)] hover:bg-teal-50'
-                                }`}
-                        >
-                            <Send className="w-6 h-6" />
-                        </button>
-                    </div>
+                    <input
+                        type="text"
+                        value={input}
+                        onChange={(e) => setInput(e.target.value)}
+                        placeholder="Define your objective..."
+                        className="flex-1 bg-transparent border-none focus:ring-0 text-[15px] font-semibold px-2 py-3"
+                        disabled={loading}
+                    />
+
+                    <motion.button
+                        whileTap={{ scale: 0.9 }}
+                        type="submit"
+                        disabled={(!input.trim() && !selectedImage) || loading}
+                        className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-all ${(!input.trim() && !selectedImage) || loading
+                                ? 'bg-gray-100 text-gray-300'
+                                : 'premium-gradient text-white shadow-lg'
+                            }`}
+                    >
+                        <Send className="w-5 h-5 fill-current" />
+                    </motion.button>
                 </form>
-                <p className="text-[10px] text-center text-[var(--text-muted)] mt-3 font-medium uppercase tracking-[0.05em]">
-                    Pulse Proprietary Intelligence • Premium Access
-                </p>
+
+                {imagePreview && (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.5 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="absolute bottom-28 left-8"
+                    >
+                        <div className="relative">
+                            <img src={imagePreview} alt="Preview" className="w-20 h-20 object-cover rounded-2xl border-4 border-white shadow-2xl" />
+                            <button
+                                onClick={removeImage}
+                                className="absolute -top-3 -right-3 w-8 h-8 bg-black text-white rounded-full flex items-center justify-center shadow-lg active:scale-75 transition-all"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+                    </motion.div>
+                )}
             </div>
         </div>
     )

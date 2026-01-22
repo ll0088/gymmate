@@ -18,7 +18,7 @@ CORE DIRECTIVES:
 Maintain a premium, sophisticated, and authoritative tone at all times.
 `;
 
-export const getGeminiResponse = async (messages, modelName = "gemini-2.0-flash") => {
+export const getGeminiResponse = async (messages, modelName = "gemini-1.5-flash") => {
     try {
         const model = genAI.getGenerativeModel({
             model: modelName,
@@ -42,7 +42,7 @@ export const getGeminiResponse = async (messages, modelName = "gemini-2.0-flash"
     }
 };
 
-export const getGeminiStream = async (messages, onChunk, modelName = "gemini-2.0-flash") => {
+export const getGeminiStream = async (messages, onChunk, modelName = "gemini-1.5-flash") => {
     try {
         const model = genAI.getGenerativeModel({
             model: modelName,
@@ -71,7 +71,7 @@ export const getGeminiStream = async (messages, onChunk, modelName = "gemini-2.0
 
 export const analyzeImage = async (imageFile, prompt) => {
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
         // Convert file to base64
         const base64Data = await new Promise((resolve) => {
@@ -100,17 +100,19 @@ export const analyzeImage = async (imageFile, prompt) => {
 
 export const scanFoodImage = async (base64Image) => {
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
         const prompt = `
-            Analyze this food image. Provide a JSON response with:
+            Analyze this food image like a clinical nutritionist. 
+            Identify the food items and estimate their weight/volume.
+            Return a JSON object with:
             {
-                "food_name": "Name of the food",
-                "calories": 0,
-                "protein": 0,
-                "carbs": 0,
-                "fats": 0
+                "food_name": "Concise name of the dish",
+                "calories": estimated_kcal_as_number,
+                "protein": estimated_g_as_number,
+                "carbs": estimated_g_as_number,
+                "fats": estimated_g_as_number
             }
-            Return ONLY the JSON. No other text. Be as accurate as possible.
+            CRITICAL: Return ONLY the raw JSON object. No markdown, no backticks, no preamble.
         `;
 
         const result = await model.generateContent([
@@ -124,15 +126,16 @@ export const scanFoodImage = async (base64Image) => {
         ]);
 
         const response = await result.response;
-        const text = response.text();
-        const jsonMatch = text.match(/\{.*\}/s);
+        const text = response.text().trim();
+        // Robust JSON extraction
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
             return { data: JSON.parse(jsonMatch[0]), error: null };
         }
-        throw new Error("Failed to parse AI response");
+        throw new Error("Invalid AI response format");
     } catch (error) {
         console.error("Scan Error:", error);
-        return { data: null, error: error.message };
+        return { data: null, error: "AI Scan failed. Please try a clearer angle." };
     }
 };
 

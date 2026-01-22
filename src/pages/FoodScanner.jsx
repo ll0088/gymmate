@@ -22,13 +22,15 @@ export default function FoodScanner() {
 
         try {
             const base64Image = await imageToBase64(file)
-            const { data, error } = await scanFoodImage(base64Image)
+            const { data, error: aiError } = await scanFoodImage(base64Image)
 
-            if (error) throw new Error(error)
+            if (aiError) throw new Error(aiError)
             setAnalysis(data)
         } catch (err) {
             console.error('Scan Error:', err)
-            alert("AI Scan failed. Please try again.")
+            setImage(null)
+            setAnalysis(null)
+            alert(err.message || "Elite analysis failed. Please ensure the lighting is good.")
         } finally {
             setLoading(false)
         }
