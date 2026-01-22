@@ -96,11 +96,19 @@ export default function Profile() {
             <div className="max-w-md mx-auto">
                 {/* Header Profile Section */}
                 <div className="relative pt-12 pb-8 px-6 text-center">
-                    <button className="absolute top-12 right-6 p-3 bg-white rounded-2xl shadow-sm">
+                    <div className="absolute top-10 left-6">
+                        <button
+                            onClick={() => navigate('/dashboard')}
+                            className="p-3 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all active:scale-95"
+                        >
+                            <span className="text-sm font-bold text-[var(--primary-teal)] tracking-tight">Back</span>
+                        </button>
+                    </div>
+                    <button className="absolute top-10 right-6 p-3 bg-white rounded-2xl shadow-sm hover:shadow-md transition-all active:scale-95">
                         <Settings className="w-6 h-6 text-[var(--primary-teal)]" />
                     </button>
 
-                    <div className="relative inline-block mb-6">
+                    <div className="relative inline-block mb-6 mt-6">
                         <div className="w-32 h-32 rounded-[40px] bg-white border-4 border-white shadow-2xl overflow-hidden flex items-center justify-center relative group">
                             {profile?.avatar_url ? (
                                 <img src={profile.avatar_url} className="w-full h-full object-cover" alt="Profile" />

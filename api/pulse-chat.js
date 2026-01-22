@@ -31,10 +31,10 @@ export default async function handler(req, res) {
       systemInstruction: SYSTEM_PROMPT,
     });
 
-    const history = messages.slice(0, -1).map((msg) => ({
-      role: msg.role === "assistant" ? "model" : "user",
-      parts: [{ text: String(msg.content ?? "") }],
-    }));
+    // Gemini chat requires the conversation to start with a 'user' role.
+    // Our UI starts with an assistant greeting, so we *don't* send history for now
+    // to avoid "First content should be with role 'user'" errors.
+    const history = [];
 
     const lastMessage = String(messages[messages.length - 1]?.content ?? "").trim();
     if (!lastMessage) {

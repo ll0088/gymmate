@@ -32,12 +32,11 @@ export default function Swipe() {
                 .limit(20)
 
             // Fallback demo profiles if database is empty so new users can test swipe.
-            // Includes men/women + trainer profiles with photos.
+            // Buddies only (no trainers) with mixed male/female photos.
             if (data && data.length > 0) {
                 setProfiles(data)
             } else {
                 setProfiles([
-                    // Users
                     {
                         id: 'demo-1',
                         role: 'user',
@@ -77,31 +76,6 @@ export default function Swipe() {
                         experience_level: 'Intermediate',
                         gym_name: 'Virgin Active',
                         avatar_url: 'https://i.pravatar.cc/800?img=32',
-                    },
-                    // Trainers
-                    {
-                        id: 'demo-t1',
-                        role: 'trainer',
-                        full_name: 'Marcus Thorne',
-                        age: 32,
-                        fitness_goal: 'Coaching',
-                        experience_level: 'Expert',
-                        gym_name: 'Third Space Soho',
-                        specialties: 'Hypertrophy • Fat Loss',
-                        price_per_hour: 55,
-                        avatar_url: 'https://i.pravatar.cc/800?img=15',
-                    },
-                    {
-                        id: 'demo-t2',
-                        role: 'trainer',
-                        full_name: 'Elena Kostic',
-                        age: 29,
-                        fitness_goal: 'Coaching',
-                        experience_level: 'Expert',
-                        gym_name: 'PureGym',
-                        specialties: 'Mobility • Rehab • Yoga',
-                        price_per_hour: 45,
-                        avatar_url: 'https://i.pravatar.cc/800?img=44',
                     },
                 ])
             }
