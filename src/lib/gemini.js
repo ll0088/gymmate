@@ -2,17 +2,65 @@ export const getGeminiStream = async (messages, onChunk, modelName = "gemini-1.5
   // Client-side wrapper: we call our Vercel Serverless Function instead of exposing the API key in the browser.
   // We keep the same signature so the UI doesn't need major changes.
   try {
+    // Try streaming first, fallback to single response if streaming fails
+    try {
+      const res = await fetch("/api/pulse-chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages, stream: true }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Streaming not available");
+      }
+
+      // Handle streaming response
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split("\n\n");
+        buffer = lines.pop() || "";
+
+        for (const line of lines) {
+          if (line.startsWith("data: ")) {
+            try {
+              const data = JSON.parse(line.slice(6));
+              if (data.done) return;
+              if (data.text) onChunk(data.text);
+            } catch (e) {
+              console.warn("Parse error:", e);
+            }
+          }
+        }
+      }
+      return; // Streaming succeeded
+    } catch (streamError) {
+      console.log("Streaming failed, using single response:", streamError);
+      // Fallback to non-streaming
+    }
+
+    // Non-streaming fallback
     const res = await fetch("/api/pulse-chat", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ messages, modelName }),
+      body: JSON.stringify({ messages, stream: false }),
     });
+
     const json = await res.json();
     if (!res.ok) throw new Error(json?.error || "Pulse request failed");
-    onChunk(String(json.text || ""));
+    
+    // Simulate streaming by calling onChunk with the full response
+    const fullText = String(json.text || "");
+    onChunk(fullText);
   } catch (error) {
     console.error("Pulse Stream Error:", error);
-    onChunk("Pulse is unavailable right now. Please try again.");
+    onChunk("Pulse is unavailable right now. Please check your network and try again.");
   }
 };
 

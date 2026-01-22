@@ -23,15 +23,48 @@ export default function Swipe() {
     }, [])
 
     const fetchProfiles = async () => {
-        const user = await getCurrentUser()
-        const { data, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .neq('id', user.id)
-            .limit(20)
+        try {
+            const user = await getCurrentUser()
+            const { data } = await supabase
+                .from('profiles')
+                .select('*')
+                .neq('id', user.id)
+                .limit(20)
 
-        if (data) setProfiles(data)
-        setLoading(false)
+            // Fallback demo profiles if database is empty so new users can test swipe
+            if (data && data.length > 0) {
+                setProfiles(data)
+            } else {
+                setProfiles([
+                    {
+                        id: 'demo-1',
+                        full_name: 'Alex Rivera',
+                        age: 26,
+                        fitness_goal: 'Strength',
+                        experience_level: 'Advanced',
+                        gym_name: 'PureGym London Central',
+                    },
+                    {
+                        id: 'demo-2',
+                        full_name: 'Sarah Chen',
+                        age: 24,
+                        fitness_goal: 'Bodyweight',
+                        experience_level: 'Intermediate',
+                        gym_name: 'Gymbox Farringdon',
+                    },
+                    {
+                        id: 'demo-3',
+                        full_name: 'James Wilson',
+                        age: 28,
+                        fitness_goal: 'Endurance',
+                        experience_level: 'Beginner',
+                        gym_name: 'JD Gyms',
+                    },
+                ])
+            }
+        } finally {
+            setLoading(false)
+        }
     }
 
     const activeProfile = profiles[currentIndex]

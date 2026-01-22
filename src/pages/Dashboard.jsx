@@ -119,7 +119,7 @@ export default function Dashboard() {
                 <div className="relative z-10">
                     <div className="flex items-center gap-2 mb-8 opacity-70">
                         <Sparkles className="w-4 h-4" />
-                        <span className="text-[10px] font-black uppercase tracking-widest">WEARABLE SYNC ACTIVE • WHOOP INTERFACE</span>
+                            <span className="text-[10px] font-black uppercase tracking-widest">WEARABLE SYNC ACTIVE</span>
                     </div>
                     <div className="flex justify-between items-end px-2">
                         {stats.map((stat, i) => (

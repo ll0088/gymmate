@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { getCurrentUser } from './lib/supabase'
 import Auth from './pages/Auth'
@@ -15,6 +15,36 @@ import Profile from './pages/Profile'
 import BottomNav from './components/BottomNav'
 import PulseFAB from './components/PulseFAB'
 import './index.css'
+
+function AppShell({ user }) {
+  const location = useLocation()
+  const onPulsePage = location.pathname === '/pulse'
+
+  return (
+    <div className="min-h-screen bg-[var(--bg-cream)]">
+      <Routes>
+        <Route path="/" element={user ? <Navigate to="/dashboard" /> : <Auth />} />
+        <Route path="/onboarding" element={user ? <Onboarding /> : <Navigate to="/" />} />
+        <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/" />} />
+        <Route path="/swipe" element={user ? <Swipe /> : <Navigate to="/" />} />
+        <Route path="/matches" element={user ? <Matches /> : <Navigate to="/" />} />
+        <Route path="/chat/:matchId" element={user ? <Chat /> : <Navigate to="/" />} />
+        <Route path="/pulse" element={user ? <Pulse /> : <Navigate to="/" />} />
+        <Route path="/marketplace" element={user ? <Marketplace /> : <Navigate to="/" />} />
+        <Route path="/shop" element={user ? <Shop /> : <Navigate to="/" />} />
+        <Route path="/scanner" element={user ? <FoodScanner /> : <Navigate to="/" />} />
+        <Route path="/profile" element={user ? <Profile /> : <Navigate to="/" />} />
+      </Routes>
+
+      {user && !onPulsePage && (
+        <>
+          <PulseFAB />
+          <BottomNav />
+        </>
+      )}
+    </div>
+  )
+}
 
 function App() {
   const [user, setUser] = useState(null)
@@ -40,28 +70,7 @@ function App() {
 
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-[var(--bg-cream)]">
-        <Routes>
-          <Route path="/" element={user ? <Navigate to="/dashboard" /> : <Auth />} />
-          <Route path="/onboarding" element={user ? <Onboarding /> : <Navigate to="/" />} />
-          <Route path="/dashboard" element={user ? <Dashboard /> : <Navigate to="/" />} />
-          <Route path="/swipe" element={user ? <Swipe /> : <Navigate to="/" />} />
-          <Route path="/matches" element={user ? <Matches /> : <Navigate to="/" />} />
-          <Route path="/chat/:matchId" element={user ? <Chat /> : <Navigate to="/" />} />
-          <Route path="/pulse" element={user ? <Pulse /> : <Navigate to="/" />} />
-          <Route path="/marketplace" element={user ? <Marketplace /> : <Navigate to="/" />} />
-          <Route path="/shop" element={user ? <Shop /> : <Navigate to="/" />} />
-          <Route path="/scanner" element={user ? <FoodScanner /> : <Navigate to="/" />} />
-          <Route path="/profile" element={user ? <Profile /> : <Navigate to="/" />} />
-        </Routes>
-
-        {user && (
-          <>
-            <PulseFAB />
-            <BottomNav />
-          </>
-        )}
-      </div>
+      <AppShell user={user} />
     </BrowserRouter>
   )
 }

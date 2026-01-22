@@ -20,7 +20,7 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: "Missing GEMINI_API_KEY" });
     }
 
-    const { messages } = req.body || {};
+    const { messages, stream = false } = req.body || {};
     if (!Array.isArray(messages) || messages.length === 0) {
       return res.status(400).json({ error: "Missing messages" });
     }
@@ -42,14 +42,34 @@ export default async function handler(req, res) {
     }
 
     const chat = model.startChat({ history });
-    const result = await chat.sendMessage(lastMessage);
-    const response = await result.response;
-    const text = response.text();
 
-    return res.status(200).json({ text });
+    if (stream) {
+      // Stream response
+      res.setHeader("Content-Type", "text/event-stream");
+      res.setHeader("Cache-Control", "no-cache");
+      res.setHeader("Connection", "keep-alive");
+
+      const result = await chat.sendMessageStream(lastMessage);
+      let fullText = "";
+
+      for await (const chunk of result.stream) {
+        const chunkText = chunk.text();
+        fullText += chunkText;
+        res.write(`data: ${JSON.stringify({ text: chunkText })}\n\n`);
+      }
+
+      res.write(`data: ${JSON.stringify({ done: true })}\n\n`);
+      res.end();
+    } else {
+      // Single response
+      const result = await chat.sendMessage(lastMessage);
+      const response = await result.response;
+      const text = response.text();
+      return res.status(200).json({ text });
+    }
   } catch (e) {
     console.error("pulse-chat error:", e);
-    return res.status(500).json({ error: "Pulse request failed" });
+    return res.status(500).json({ error: "Pulse request failed: " + e.message });
   }
 }
 
