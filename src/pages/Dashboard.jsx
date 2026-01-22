@@ -172,8 +172,8 @@ export default function Dashboard() {
                 className="fixed bottom-32 right-6 w-16 h-16 premium-gradient rounded-full flex items-center justify-center shadow-2xl shadow-teal-900/40 z-50 group border-4 border-white"
             >
                 <Zap className="w-8 h-8 text-white fill-current animate-pulse group-hover:scale-110 transition-transform" />
-                <div className="absolute -top-1 -right-1 bg-red-500 text-[8px] font-black text-white px-2 py-0.5 rounded-full border-2 border-white uppercase tracking-tighter animate-bounce">
-                    Elite
+                <div className="absolute -top-1 -right-1 bg-white text-[8px] font-black text-[var(--primary-teal)] px-2 py-0.5 rounded-full border-2 border-white uppercase tracking-tighter animate-bounce">
+                    Pulse
                 </div>
             </motion.button>
 

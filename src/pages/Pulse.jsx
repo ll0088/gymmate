@@ -8,7 +8,7 @@ export default function Pulse() {
     const [messages, setMessages] = useState([
         {
             role: 'assistant',
-            content: "Hey there! I'm Pulse, your elite performance coach. Whether you're looking to shatter personal records, optimize your macros, or perfect your form—I've got the data and the drive to get you there. What's our objective today?"
+            content: "Hey! I'm Pulse, your performance coach. Whether you're looking to shatter personal records, optimize your macros, or perfect your form—I've got you. What's the objective today?"
         }
     ])
     const [input, setInput] = useState('')
@@ -92,7 +92,7 @@ export default function Pulse() {
             console.error("Pulse Error:", error)
             setMessages(prev => {
                 const newMessages = [...prev]
-                newMessages[newMessages.length - 1].content = "Elite connectivity lost. Please recalibrate (check API/Network) and try again."
+                newMessages[newMessages.length - 1].content = "Pulse connectivity lost. Please check your network and try again."
                 newMessages[newMessages.length - 1].thinking = false
                 return newMessages
             })
@@ -123,7 +123,7 @@ export default function Pulse() {
                         </div>
                         <div>
                             <h2 className="text-xl font-black text-white uppercase tracking-tighter leading-none">Pulse AI</h2>
-                            <p className="text-[10px] font-black text-white/60 uppercase tracking-widest mt-1">ELITE PERFORMANCE COACH</p>
+                            <p className="text-[10px] font-black text-white/60 uppercase tracking-widest mt-1">PERFORMANCE COACH</p>
                         </div>
                     </div>
                 </div>
@@ -173,7 +173,7 @@ export default function Pulse() {
                                         ) : message.content}
                                     </div>
                                     <div className={`text-[8px] mt-2 font-black uppercase tracking-widest opacity-40 ${message.role === 'user' ? 'text-right' : 'text-left'}`}>
-                                        {message.role === 'user' ? 'Confirmed' : 'Pulse Proprietary Intelligence'}
+                                        {message.role === 'user' ? 'Sent' : 'Pulse'}
                                     </div>
                                 </div>
                             </div>

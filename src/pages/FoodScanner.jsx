@@ -30,7 +30,7 @@ export default function FoodScanner() {
             console.error('Scan Error:', err)
             setImage(null)
             setAnalysis(null)
-            alert(err.message || "Elite analysis failed. Please ensure the lighting is good.")
+            alert(err.message || "Food scan failed. Please ensure the lighting is good.")
         } finally {
             setLoading(false)
         }
