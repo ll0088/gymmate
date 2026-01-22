@@ -38,7 +38,7 @@ export const getGeminiResponse = async (messages, modelName = "gemini-1.5-flash"
         return response.text();
     } catch (error) {
         console.error("Gemini API Error:", error);
-        return "I'm sorry, I'm having trouble connecting right now. Please try again later.";
+        return "Elite intelligence recalibrating. Please define your objective again.";
     }
 };
 
@@ -52,11 +52,11 @@ export const getGeminiStream = async (messages, onChunk, modelName = "gemini-1.5
         const chat = model.startChat({
             history: messages.slice(0, -1).map(msg => ({
                 role: msg.role === 'assistant' ? 'model' : 'user',
-                parts: [{ text: msg.content }],
+                parts: [{ text: msg.content || "Analyze this." }],
             })),
         });
 
-        const lastMessage = messages[messages.length - 1].content;
+        const lastMessage = messages[messages.length - 1].content || "Analyze the context and provide elite guidance.";
         const result = await chat.sendMessageStream(lastMessage);
 
         for await (const chunk of result.stream) {
@@ -65,7 +65,7 @@ export const getGeminiStream = async (messages, onChunk, modelName = "gemini-1.5
         }
     } catch (error) {
         console.error("Gemini Stream Error:", error);
-        onChunk("Error connecting to Gemini.");
+        onChunk("Precision link severed. Checking local override...");
     }
 };
 
@@ -73,19 +73,24 @@ export const analyzeImage = async (imageFile, prompt) => {
     try {
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
-        // Convert file to base64
-        const base64Data = await new Promise((resolve) => {
-            const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result.split(',')[1]);
-            reader.readAsDataURL(imageFile);
-        });
+        // Convert file to base64 if it's a file, otherwise assume it's already base64
+        let base64Data;
+        if (typeof imageFile === 'string') {
+            base64Data = imageFile.includes(',') ? imageFile.split(',')[1] : imageFile;
+        } else {
+            base64Data = await new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result.split(',')[1]);
+                reader.readAsDataURL(imageFile);
+            });
+        }
 
         const result = await model.generateContent([
             prompt,
             {
                 inlineData: {
                     data: base64Data,
-                    mimeType: imageFile.type
+                    mimeType: "image/jpeg"
                 }
             }
         ]);
@@ -94,16 +99,16 @@ export const analyzeImage = async (imageFile, prompt) => {
         return response.text();
     } catch (error) {
         console.error("Gemini Vision Error:", error);
-        return "Analysis failed. Please try a clearer photo.";
+        return "Optical array error. Please provide a high-resolution input.";
     }
 };
 
 export const scanFoodImage = async (base64Image) => {
     try {
+        // Use gemini-1.5-flash for maximum speed and reliability in scanner
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
         const prompt = `
-            Analyze this food image like a clinical nutritionist. 
-            Identify the food items and estimate their weight/volume.
+            Identify the food items in this image and estimate their nutritional values.
             Return a JSON object with:
             {
                 "food_name": "Concise name of the dish",
@@ -112,14 +117,14 @@ export const scanFoodImage = async (base64Image) => {
                 "carbs": estimated_g_as_number,
                 "fats": estimated_g_as_number
             }
-            CRITICAL: Return ONLY the raw JSON object. No markdown, no backticks, no preamble.
+            CRITICAL: Return ONLY the JSON object. No other text.
         `;
 
         const result = await model.generateContent([
-            prompt,
+            { text: prompt },
             {
                 inlineData: {
-                    data: base64Image,
+                    data: base64Image.includes(',') ? base64Image.split(',')[1] : base64Image,
                     mimeType: "image/jpeg"
                 }
             }
@@ -127,15 +132,16 @@ export const scanFoodImage = async (base64Image) => {
 
         const response = await result.response;
         const text = response.text().trim();
+
         // Robust JSON extraction
         const jsonMatch = text.match(/\{[\s\S]*\}/);
         if (jsonMatch) {
             return { data: JSON.parse(jsonMatch[0]), error: null };
         }
-        throw new Error("Invalid AI response format");
+        throw new Error("Invalid Pulse analysis format");
     } catch (error) {
         console.error("Scan Error:", error);
-        return { data: null, error: "AI Scan failed. Please try a clearer angle." };
+        return { data: null, error: "Elite analysis failed. Lighting or angle may be insufficient." };
     }
 };
 
@@ -143,7 +149,7 @@ export const imageToBase64 = async (file) => {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result.split(',')[1]);
+        reader.onload = () => resolve(reader.result);
         reader.onerror = (error) => reject(error);
     });
 };
